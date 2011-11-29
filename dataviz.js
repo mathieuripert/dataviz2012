@@ -4,6 +4,7 @@
 	visualizeCandidat("bayrou");
 	visualizeCandidat("lepen");
 
+	var array = [];
 	
 function visualizeCandidat(candidat){
 	
@@ -14,6 +15,7 @@ function visualizeCandidat(candidat){
 					.attr("height", height),
 		canvas = document.createElement('canvas').getContext('2d'),	
 			dim = 128,
+		
 	     colorHash = {};
 
 	 function avgCol(x, y, z, w) {
@@ -71,10 +73,71 @@ function loadImage(imageData) {
 	vizualize(candidat);
 }
 	
+	CreateArray();
+	
+function CreateArray() {
 
-function vizualize(_candidat){
 
-	d3.json("/home/get_all_tweets/"+ _candidat +".json", function(json) {
+d3.json("http://dataviz2012beta.herokuapp.com/home/get_count/sarkozy.json", function(json) {
+
+	array.push({
+	name:"sarkozy",
+	count:json
+	})
+
+	;})
+	
+d3.json("http://dataviz2012beta.herokuapp.com/home/get_count/hollande.json", function(json) {
+
+	array.push({
+	name:"hollande",
+	count:json
+	})
+
+	;})
+
+d3.json("http://dataviz2012beta.herokuapp.com/home/get_count/lepen.json", function(json) {
+
+	array.push({
+	name:"lepen",
+	count:json
+	})
+
+	;})
+	
+d3.json("http://dataviz2012beta.herokuapp.com/home/get_count/joly.json", function(json) {
+
+	array.push({
+	name:"joly",
+	count:json
+	})
+
+	;})
+	
+d3.json("http://dataviz2012beta.herokuapp.com/home/get_count/morin.json", function(json) {
+
+	array.push({
+	name:"morin",
+	count:json
+	})
+
+	;})
+	
+d3.json("http://dataviz2012beta.herokuapp.com/home/get_count/melenchon.json", function(json) {
+
+	array.push({
+	name:"mellenchon",
+	count:json
+	})
+
+	;})
+	}
+	
+	//All tweets d'un candidat : http://dataviz2012beta.herokuapp.com/home/get_week_tweets/sarkozy.json
+
+function vizualize(candidat){
+
+	d3.json("http://dataviz2012beta.herokuapp.com/home/get_week_tweets/"+candidat+".json", function(json) {
 	var mestweets = json;
 	panel.selectAll("circle")
 		.data(mestweets)
@@ -82,19 +145,33 @@ function vizualize(_candidat){
 		.attr("cx", function(d, i) {return 10 + (i%128)*3;})
 		.attr("cy", function(d, i) { return 10 + Math.floor(i/128)*3 ;})
 		.attr("class", function(d, i) {return 'c'+(i%dim)+"_"+Math.floor(i/dim)+"_"+"7";})
-		.attr("r", 2)
-		.attr('fill', function(d, i) { return'rgb(' + colorHash['c'+(i%dim)+"_"+Math.floor(i/dim)+"_"+"7"].map(Math.round).join(',') + ')'
+		.attr('fill', function(d, i) { return'rgb(' + colorHash['c'+(i%dim)+"_"+Math.floor(i/dim)+"_"+"7"].map(Math.round).join(',') + ')';})
 		.transition()
-        .delay(function(d, i) { return i * 1; })
-	    .attr("cx", function(d, i) {return 10 + (i%128)*3;})
-        .attr("cy", function(d, i) { return 10 + Math.floor(i/128)*3 ;})
-        .attr("r", 2)
-
+		.delay(function(d, i) { return i * 1; })
+		.attr("cx", function(d, i) {return 10 + (i%128)*3;})
+		.attr("cy", function(d, i) { return 10 + Math.floor(i/128)*3 ;})
+		.attr("r", 1)
+		
 		;})
 		
-	});
+	}
+
+/*function vizualize(_candidat){
+
+	d3.json("http://dataviz2012beta.herokuapp.com/home/get_count/mellenchon.json", function(json) {
+	var mestweets = json;
+	panel.selectAll("circle")
+		.data(mestweets)
+	.enter().append("svg:circle")
+		.attr("cx", function(d, i) {return 10 + (i%128)*3;})
+		.attr("cy", function(d, i) { return 10 + Math.floor(i/128)*3 ;})
+		.attr("class", function(d, i) {return 'c'+(i%dim)+"_"+Math.floor(i/dim)+"_"+"7";})
+		.attr("r", 1)
+		.attr('fill', function(d, i) { return'rgb(' + colorHash['c'+(i%dim)+"_"+Math.floor(i/dim)+"_"+"7"].map(Math.round).join(',') + ')';})
+		
+		;})
+		
+	} */
 
 	return loadImage;
-};
-
 };
