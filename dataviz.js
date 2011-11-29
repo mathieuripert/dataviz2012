@@ -82,8 +82,13 @@ function vizualize(_candidat){
 		.attr("cx", function(d, i) {return 10 + (i%128)*3;})
 		.attr("cy", function(d, i) { return 10 + Math.floor(i/128)*3 ;})
 		.attr("class", function(d, i) {return 'c'+(i%dim)+"_"+Math.floor(i/dim)+"_"+"7";})
-		.attr("r", 1)
+		.attr("r", 2)
 		.attr('fill', function(d, i) { return'rgb(' + colorHash['c'+(i%dim)+"_"+Math.floor(i/dim)+"_"+"7"].map(Math.round).join(',') + ')'
+		.transition()
+        .delay(function(d, i) { return i * 1; })
+	    .attr("cx", function(d, i) {return 10 + (i%128)*3;})
+        .attr("cy", function(d, i) { return 10 + Math.floor(i/128)*3 ;})
+        .attr("r", 2)
 
 		;})
 		
