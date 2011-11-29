@@ -74,7 +74,7 @@ function loadImage(imageData) {
 
 function vizualize(_candidat){
 
-	d3.json("http://dataviz2012beta.herokuapp.com/home/get_all_tweets/"+ _candidat +".json", function(json) {
+	d3.json("/home/get_all_tweets/"+ _candidat +".json", function(json) {
 	var mestweets = json;
 	panel.selectAll("circle")
 		.data(mestweets)
