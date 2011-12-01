@@ -1,177 +1,106 @@
-
-	visualizeCandidat("sarkozy");
-	visualizeCandidat("hollande");
-	visualizeCandidat("bayrou");
-	visualizeCandidat("lepen");
-
-	var array = [];
-	
-function visualizeCandidat(candidat){
-	
-	var width = 350,
-		height = 350,
-		panel = d3.select("body").append("svg:svg")
+var data;
+var colorHash = {};
+var tweets;
+var pixels = [];
+	dim =64;
+	espace = 5;
+	var width = 960,
+		height = 785,
+		panel = d3.select("#viz").append("svg:svg")
 					.attr("width", width)
-					.attr("height", height),
-		canvas = document.createElement('canvas').getContext('2d'),	
-			dim = 128,
-		
-	     colorHash = {};
-
-	 function avgCol(x, y, z, w) {
-	    return [
-	      (x[0] + y[0] + z[0] + w[0]) / 4,
-	      (x[1] + y[1] + z[1] + w[1]) / 4,
-	      (x[2] + y[2] + z[2] + w[2]) / 4
-	    ];
-	  }
-	  var hrefSplit = window.location.href.split("?", 2);
-	  var domian = hrefSplit[0];
-	  var file = hrefSplit[1];
-	  file = 'assets/'+ candidat +'.png';
-	  var img = new Image();
-	  img.onload = function() { loadImage(this); };
-	  img.src = file;
+					.attr("height", height);
+					
+					
+	d3.json("/home/get_all_counts.json", function(json) {
+	 tweets = json;
+	 
+	var canvas = document.createElement('canvas').getContext('2d');
+	var hrefSplit = window.location.href.split("?", 2);
+	var file = hrefSplit[1];
 	
+	name = tweets[0].name.substring(1,tweets[0].name.length);
+	file = '/assets/'+name+'.png';
+	var img = new Image();
+	img.onload = function() { loadImage(this,0); };
+	img.src = file;
+	 
+	 
 	
-function loadImage(imageData) {
+	 
+	  function loadImage(imageData,c) {
 	    try {
+		  
 	      canvas.drawImage(imageData, 0, 0, dim, dim);
 	      data = canvas.getImageData(0, 0, dim, dim).data;
 	    } catch(e) {
 	      alert("Failed to load image.");
 	      return;
 	    }
-	    var depth = Math.round(Math.log(dim) / Math.log(2));
-	    colorHash = {};
+		
 	    var t = 0;
-	    for (y = 0; y < dim; y++) {
-	      for (x = 0; x < dim; x++) {
+	    for (y = Math.floor(c/3)*(dim+espace); y < Math.floor(c/3)*(dim+espace) + dim; y++) {
+	      for (x = (c%3)*(dim+espace); x < (c%3)*(dim+espace) + dim; x++) {
 	        var col = [data[t], data[t+1], data[t+2]];
-	        colorHash['c' + [x,y,depth].join('_')] = col;
+	        colorHash['c' + [x,y].join('_')] = col;
 	        t += 4;
 	      }
 	    }
-
-	    level = dim;
-	    do {
-	      level /= 2;
-	      depth--;
-	      for (y = 0; y < level; y++) {
-	        for (x = 0; x < level; x++) {
-	          colorHash['c' + [x,y,depth].join('_')] = avgCol(
-	            colorHash['c' + [2*x  ,2*y  ,depth+1].join('_')],
-	            colorHash['c' + [2*x+1,2*y  ,depth+1].join('_')],
-	            colorHash['c' + [2*x  ,2*y+1,depth+1].join('_')],
-	            colorHash['c' + [2*x+1,2*y+1,depth+1].join('_')]
-	          );
-	        }
-	      }
-	    } 
-	while(level > 1);
+		
 	
-	vizualize(candidat);
-}
-	
-	CreateArray();
-	
-function CreateArray() {
 
-
-d3.json("http://dataviz2012beta.herokuapp.com/home/get_count/sarkozy.json", function(json) {
-
-	array.push({
-	name:"sarkozy",
-	count:json
-	})
-
-	;})
-	
-d3.json("http://dataviz2012beta.herokuapp.com/home/get_count/hollande.json", function(json) {
-
-	array.push({
-	name:"hollande",
-	count:json
-	})
-
-	;})
-
-d3.json("http://dataviz2012beta.herokuapp.com/home/get_count/lepen.json", function(json) {
-
-	array.push({
-	name:"lepen",
-	count:json
-	})
-
-	;})
-	
-d3.json("http://dataviz2012beta.herokuapp.com/home/get_count/joly.json", function(json) {
-
-	array.push({
-	name:"joly",
-	count:json
-	})
-
-	;})
-	
-d3.json("http://dataviz2012beta.herokuapp.com/home/get_count/morin.json", function(json) {
-
-	array.push({
-	name:"morin",
-	count:json
-	})
-
-	;})
-	
-d3.json("http://dataviz2012beta.herokuapp.com/home/get_count/melenchon.json", function(json) {
-
-	array.push({
-	name:"mellenchon",
-	count:json
-	})
-
-	;})
+			if(c < tweets.length-1)
+			{
+					name = tweets[c+1].name.substring(1,tweets[c+1].name.length);
+					file = 'assets/'+name+'.png';
+					var img = new Image();
+					img.onload = function() { loadImage(this,c+1); };
+					img.src = file;
+			}
+			else
+			{
+				
+				viz();
+			}
+	    
 	}
+	});
+
 	
-	//All tweets d'un candidat : http://dataviz2012beta.herokuapp.com/home/get_week_tweets/sarkozy.json
+	
 
-function vizualize(candidat){
-
-	d3.json("http://dataviz2012beta.herokuapp.com/home/get_week_tweets/"+candidat+".json", function(json) {
-	var mestweets = json;
-	panel.selectAll("circle")
-		.data(mestweets)
-	.enter().append("svg:circle")
-		.attr("cx", function(d, i) {return 10 + (i%128)*3;})
-		.attr("cy", function(d, i) { return 10 + Math.floor(i/128)*3 ;})
-		.attr("class", function(d, i) {return 'c'+(i%dim)+"_"+Math.floor(i/dim)+"_"+"7";})
-		.attr('fill', function(d, i) { return'rgb(' + colorHash['c'+(i%dim)+"_"+Math.floor(i/dim)+"_"+"7"].map(Math.round).join(',') + ')';})
-		.transition()
-		.delay(function(d, i) { return i * 1; })
-		.attr("cx", function(d, i) {return 10 + (i%128)*3;})
-		.attr("cy", function(d, i) { return 10 + Math.floor(i/128)*3 ;})
-		.attr("r", 1)
+function viz(){
+		candidats_count = tweets.length;
+		tweets.sort(function(a,b){
+			return a.count > b.count;
+		})
 		
-		;})
+	for(i=0; i<= tweets[0].count; i=i+1){
+		for(k=0; k< candidats_count; k=k+1)
+			{
+			pixels.push({x:i%dim+(k%3)*(dim+espace),y:Math.floor(i/dim)+(dim+espace)*Math.floor(k/3)});
+			}
+		}
 		
+    for (j=1; j < candidats_count; j=j+1){
+		for(i=tweets[j-1].count; i<= Math.min(tweets[j].count,(candidats_count-1)*dim*dim); i=i+1){
+			for(k=0; k< candidats_count -j; k=k+1)
+			{
+				pixels.push({x:i%dim+(k%3)*(dim+espace),y:Math.floor(i/dim)+(dim+espace)*Math.floor(k/3)});
+			}
+		}
 	}
-
-/*function vizualize(_candidat){
-
-	d3.json("http://dataviz2012beta.herokuapp.com/home/get_count/mellenchon.json", function(json) {
-	var mestweets = json;
 	panel.selectAll("circle")
-		.data(mestweets)
+		.data(pixels)
 	.enter().append("svg:circle")
-		.attr("cx", function(d, i) {return 10 + (i%128)*3;})
-		.attr("cy", function(d, i) { return 10 + Math.floor(i/128)*3 ;})
-		.attr("class", function(d, i) {return 'c'+(i%dim)+"_"+Math.floor(i/dim)+"_"+"7";})
-		.attr("r", 1)
-		.attr('fill', function(d, i) { return'rgb(' + colorHash['c'+(i%dim)+"_"+Math.floor(i/dim)+"_"+"7"].map(Math.round).join(',') + ')';})
-		
-		;})
-		
-	} */
-
-	return loadImage;
+		.attr("cx", function(d) {return  5*d.x;})
+		.attr("cy", function(d) { return 5*d.y;})
+		.attr("class", function(d) {return 'c'+(d.x)+"_"+Math.floor(d.y);})
+		.attr('fill', function(d, i) { return'rgb(' + colorHash['c'+(d.x)+"_"+Math.floor(d.y)].map(Math.round).join(',') + ')';})
+		.attr("r", 2)
+		.on("mouseover", function(){d3.select(this).style("stroke-width", 1).style("stroke", "red").attr("r",4);})
+		.on("click", function(){
+		  ;						
+		}) 
+        .on("mouseout", function() {d3.select(this).style("stroke-width", 0.000001).attr("r",2)});
+	
 };
