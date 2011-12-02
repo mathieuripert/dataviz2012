@@ -1,4 +1,5 @@
 var data;
+var data;
 var colorHash = {};
 var tweets;
 var pixels = [];
@@ -11,16 +12,16 @@ var pixels = [];
 					.attr("height", height);
 					
 					
-	d3.json("/home/get_all_counts.json", function(json) {
+	d3.json("http://dataviz2012beta.herokuapp.com/home/get_all_counts.json", function(json) {
 	 tweets = json;
 	 
 	var canvas = document.createElement('canvas').getContext('2d');
 	var hrefSplit = window.location.href.split("?", 2);
 	var file = hrefSplit[1];
-	
 	name = tweets[0].name.substring(1,tweets[0].name.length);
-	file = '/assets/'+name+'.png';
+	file = 'http://dataviz2012beta.herokuapp.com/assets/'+name+'.png';
 	var img = new Image();
+	
 	img.onload = function() { loadImage(this,0); };
 	img.src = file;
 	 
@@ -29,10 +30,10 @@ var pixels = [];
 	 
 	  function loadImage(imageData,c) {
 	    try {
-		  
 	      canvas.drawImage(imageData, 0, 0, dim, dim);
 	      data = canvas.getImageData(0, 0, dim, dim).data;
 	    } catch(e) {
+		
 	      alert("Failed to load image.");
 	      return;
 	    }
@@ -82,7 +83,7 @@ function viz(){
 		}
 		
     for (j=1; j < candidats_count; j=j+1){
-		for(i=tweets[j-1].count; i<= Math.min(tweets[j].count,(candidats_count-1)*dim*dim); i=i+1){
+		for(i=tweets[j-1].count; i<= Math.min(tweets[j].count,dim*dim); i=i+1){
 			for(k=0; k< candidats_count -j; k=k+1)
 			{
 				pixels.push({x:i%dim+(k%3)*(dim+espace),y:Math.floor(i/dim)+(dim+espace)*Math.floor(k/3)});
@@ -92,15 +93,26 @@ function viz(){
 	panel.selectAll("circle")
 		.data(pixels)
 	.enter().append("svg:circle")
+		.attr("class", function(d) {return 'c'+(d.x)+"_"+Math.floor(d.y);})
+		.attr("r", 2)
 		.attr("cx", function(d) {return  5*d.x;})
 		.attr("cy", function(d) { return 5*d.y;})
-		.attr("class", function(d) {return 'c'+(d.x)+"_"+Math.floor(d.y);})
-		.attr('fill', function(d, i) { return'rgb(' + colorHash['c'+(d.x)+"_"+Math.floor(d.y)].map(Math.round).join(',') + ')';})
-		.attr("r", 2)
+		.attr('fill', 'white')
 		.on("mouseover", function(){d3.select(this).style("stroke-width", 1).style("stroke", "red").attr("r",4);})
-		.on("click", function(){
-		  ;						
-		}) 
-        .on("mouseout", function() {d3.select(this).style("stroke-width", 0.000001).attr("r",2)});
+		.on("click" , function(d,i) {  
+		
+		$.ajax({
+	        url: '/home/get_tweet.js?x='+ i,
+	        type: "PUT",
+	      });
 	
+		})
+		
+        .on("mouseout", function() {d3.select(this).style("stroke-width", 0.000001).attr("r",2)})
+		.transition()
+		.delay(function(d, i) { return i; })
+		.attr('fill', function(d, i) { return'rgb(' + colorHash['c'+(d.x)+"_"+Math.floor(d.y)].map(Math.round).join(',') + ')';})
+		.attr("cx", function(d) {return  5*d.x;})
+		.attr("cy", function(d) { return 5*d.y;})
+		.attr("r", 2);
 };
